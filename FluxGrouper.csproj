@@ -1,54 +1,55 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <ProjectGuid>{210af51e-9faa-48c6-bb84-1acdbe88f1fb}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FluxGrouper</RootNamespace>
-    <AssemblyTitle>FluxGrouper</AssemblyTitle>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <TargetFramework>net48</TargetFramework>
-	  <LangVersion>10</LangVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <GamePath>$(MSBuildThisFileDirectory)Resonite</GamePath>
-    <GamePath Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Resonite\')">C:\Program Files (x86)\Steam\steamapps\common\Resonite\</GamePath>
-    <GamePath Condition="Exists('$(HOME)\.steam\steam\steamapps\common\Resonite\')">$(HOME)/.steam/steam/steamapps/common/Resonite/</GamePath>
-    <GamePath Condition="Exists('E:\Games\Steam\steamapps\common\Resonite\')">E:\Games\Steam\steamapps\common\Resonite\</GamePath>
-    <GamePath Condition="Exists('E:\Programs\Steam\steamapps\common\Resonite\')">E:\Programs\Steam\steamapps\common\Resonite\</GamePath>
-    <CopyLocal>false</CopyLocal>
-    <CopyToMods Condition="'$(CopyToMods)'==''">true</CopyToMods>
-    <DebugSymbols Condition="'$(Configuration)'=='Release'">false</DebugSymbols>
-    <DebugType Condition="'$(Configuration)'=='Release'">None</DebugType>
-  </PropertyGroup>
+	<PropertyGroup>
+		<RootNamespace>FluxGrouper</RootNamespace>
+		<AssemblyName>FluxGrouper</AssemblyName>
+		<Version>1.1.2</Version>
+		
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 
-  <ItemGroup> 
-    <Reference Include="HarmonyLib">
-      <HintPath Condition="Exists('$(GamePath)0Harmony.dll')">$(GamePath)0Harmony.dll</HintPath>
-      <HintPath>$(GamePath)rml_libs\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="Elements.Core">
-      <HintPath>$(GamePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="FrooxEngine">
-      <HintPath>$(GamePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="ProtoFluxBindings">
-      <HintPath>$(GamePath)Resonite_Data\Managed\ProtoFluxBindings.dll</HintPath>
-    </Reference>
-    <Reference Include="ProtoFlux.Nodes.Core">
-    <HintPath>$(GamePath)Resonite_Data\Managed\ProtoFlux.Nodes.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="FrooxEngine">
-      <HintPath>$(GamePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="ResoniteModLoader">
-      <HintPath>$(GamePath)ResoniteModLoader.dll</HintPath>
-      <HintPath>$(GamePath)Libraries\ResoniteModLoader.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+		<GamePath>$(MSBuildThisFileDirectory)Resonite</GamePath>
+		<GamePath Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Resonite\')">C:\Program Files (x86)\Steam\steamapps\common\Resonite\</GamePath>
+		<GamePath Condition="Exists('$(HOME)\.steam\steam\steamapps\common\Resonite\')">$(HOME)/.steam/steam/steamapps/common/Resonite/</GamePath>
+		<GamePath Condition="Exists('E:\Programs\Steam\steamapps\common\Resonite\')">E:\Programs\Steam\steamapps\common\Resonite\</GamePath>
+		<GamePath Condition="Exists('E:\Games\Steam\steamapps\common\Resonite\')">E:\Games\Steam\steamapps\common\Resonite\</GamePath>
+	</PropertyGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
-    <Message Text="Attempting to copy $(TargetFileName) to $(GamePath)rml_mods" Importance="high" />
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GamePath)rml_mods" ContinueOnError="true" />
-  </Target>
+	<ItemGroup>
+		<Reference Include="0Harmony">
+			<HintPath>$(GamePath)BepInEx\core\0Harmony.dll</HintPath>
+		</Reference>
+		<Reference Include="BepInEx.Core">
+			<HintPath>$(GamePath)BepInEx\core\BepInEx.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="BepInEx.NET.Common">
+			<HintPath>$(GamePath)BepInEx\core\BepInEx.NET.Common.dll</HintPath>
+		</Reference>
+		<Reference Include="BepInEx.Preloader.Core">
+			<HintPath>$(GamePath)BepInEx\core\BepInEx.Preloader.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="BepInExResoniteShim">
+			<HintPath>$(GamePath)BepInEx\plugins\BepInExResoniteShim.dll</HintPath>
+		</Reference>
+		<Reference Include="FrooxEngine">
+		    <HintPath>$(GamePath)FrooxEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="Elements.Core">
+			<HintPath>$(GamePath)Elements.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="Renderite.Shared">
+			<HintPath>$(GamePath)Renderite.Shared.dll</HintPath>
+		</Reference>
+		<Reference Include="ProtoFluxBindings">
+			<HintPath>$(GamePath)ProtoFluxBindings.dll</HintPath>
+		</Reference>
+		<Reference Include="ProtoFlux.Nodes.Core">
+			<HintPath>$(GamePath)ProtoFlux.Nodes.Core.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GamePath)BepInEx\plugins" />
+		<Message Text="Copied $(TargetFileName) to $(GamePath)BepInEx\plugins" Importance="high" />
+	</Target>
 </Project>
