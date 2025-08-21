@@ -1,48 +1,28 @@
-﻿using FrooxEngine.UIX;
+﻿using Elements.Core;
 using FrooxEngine;
+using FrooxEngine.ProtoFlux;
+using FrooxEngine.ProtoFlux.Core;
+using FrooxEngine.ProtoFlux.Runtimes.Execution.Nodes;
 using HarmonyLib;
 using ResoniteModLoader;
 using System;
-using System.Threading.Tasks;
-using Elements.Core;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Linq;
-using System.Collections.Generic;
-using System.IO;
-using SkyFrost.Base;
-using System.Reflection;
-using System.Linq.Expressions;
-using FrooxEngine.Store;
-using FrooxEngine.ProtoFlux;
 
 public class VideoProxy : ResoniteMod
 {
-
-    public enum Resolution
+    public enum RegroupType
     {
-        Q480P,
-        Q720P,
-        Q1080P,
-        Q1440P,
-        Q2160P,
-        QBest
-    }
-
-    public enum ProxyLocation
-    {
-        Australia,
-        NorthAmerica,
-        CUSTOM
+        LinkNode,
+        Local
     }
 
     public override string Author => "LeCloutPanda";
     public override string Name => "Flux Grouper";
-    public override string Version => "1.0.0";
+    public override string Version => "1.1.1";
     public override string Link => "https://github.com/LeCloutPanda/FluxGrouper";
 
     public static ModConfiguration config;
     [AutoRegisterConfigKey] private static ModConfigurationKey<bool> ENABLED = new ModConfigurationKey<bool>("enabledToggle", "Generate option to use recalculate flux groups when using profoflux tool.", () => true);
+    [AutoRegisterConfigKey] private static ModConfigurationKey<RegroupType> REGROUPTYPE = new ModConfigurationKey<RegroupType>("regroupType", "The method used to recalculate groups.", () => RegroupType.LinkNode);
 
     public override void OnEngineInit()
     {
@@ -66,7 +46,31 @@ public class VideoProxy : ResoniteMod
                     try
                     {
                         Msg($"Recalculated Flux Node Groups for {____selectedNodes.Count}");
-                        __instance.World.ProtoFlux.ScheduleGroupRebuild(____selectedNodes[0].Slot.GetComponentInParents<ProtoFluxNode>().Group); // ____selectedNodes[0].Slot.GetComponentInParents<ProtoFluxNode>().Group
+                        switch (config.GetValue(REGROUPTYPE))
+                        {
+                            case RegroupType.LinkNode:
+                                Slot temp = __instance.Slot.ActiveUserRoot.Slot.AddSlot("FluxGrouper - Temp");
+                                temp.PersistentSelf = false;
+                                Link link = temp.AttachComponent<Link>();
+                                link.A.Target = (INode)____selectedNodes[0].Slot.GetComponentInParents<ProtoFluxNode>();
+                                link.RunInUpdates(3, () =>
+                                {
+                                    if (link != null && !link.IsRemoved)
+                                    {
+                                        link.A.Target = null;
+                                        link.RunInUpdates(3, () =>
+                                        {
+                                            if (temp != null && !temp.IsRemoved)
+                                                temp.Destroy(false);
+                                        });
+                                    }
+                                });
+                                break;
+
+                            case RegroupType.Local:
+                                __instance.World.ProtoFlux.ScheduleGroupRebuild(____selectedNodes[0].Slot.GetComponentInParents<ProtoFluxNode>().Group);
+                                break;
+                        }
 
                         foreach (ProtoFluxNodeVisual selectedNode in ____selectedNodes)
                         {
