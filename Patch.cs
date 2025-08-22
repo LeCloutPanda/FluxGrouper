@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
+using BepInEx.NET.Common;
 using BepInExResoniteShim;
 using Elements.Core;
 using FrooxEngine;
@@ -10,15 +11,10 @@ using HarmonyLib;
 
 namespace FluxGrouper;
 
-[BepInPlugin(GUID, Name, Version)]
-public class Patch : BaseResonitePlugin
+[BepInDependency("ResoniteModding.BepInExResoniteShim")]
+[ResonitePlugin("dev.lecloutpanda.fluxgrouper", "Flux Grouper", "1.1.3", "LeCloutPanda", "https://github.com/FluxGrouper/Rebind")]
+public class Patch : BasePlugin 
 {
-    public const string GUID = "dev.lecloutpanda.fluxgrouper";
-    public const string Name = "Flux Grouper";
-    public const string Version = "1.1.3";
-    public override string Author => "LeCloutPanda";
-    public override string Link => "https://github.com/LeCloutPanda/FluxGrouper";
-
     static ManualLogSource Logger = null!;
 
     public override void Load()
