@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.NET.Common;
 using BepInExResoniteShim;
@@ -11,14 +12,17 @@ using HarmonyLib;
 
 namespace FluxGrouper;
 
-[BepInDependency("ResoniteModding.BepInExResoniteShim")]
-[ResonitePlugin("dev.lecloutpanda.fluxgrouper", "Flux Grouper", "1.1.3", "LeCloutPanda", "https://github.com/FluxGrouper/Rebind")]
-public class Patch : BasePlugin 
+[ResonitePlugin(PluginMetadata.GUID, PluginMetadata.NAME, PluginMetadata.VERSION, PluginMetadata.AUTHORS, PluginMetadata.REPOSITORY_URL)]
+[BepInDependency(BepInExResoniteShim.PluginMetadata.GUID, BepInDependency.DependencyFlags.HardDependency)]
+public class Patch : BasePlugin
 {
     static ManualLogSource Logger = null!;
+	private static ConfigEntry<bool> ENABLED;
 
-    public override void Load()
-    {
+	public override void Load()
+	{
+		ENABLED = Config.Bind("General", "Create Context Menu Item", true, "Create Context Menu item for fixing flux groupings");
+
         Logger = Log;
         HarmonyInstance.PatchAll();
     }
@@ -29,9 +33,11 @@ public class Patch : BasePlugin
         [HarmonyPostfix]
         private static void Postfix(ProtoFluxTool __instance, InteractionHandler tool, ContextMenu menu, SyncRefList<ProtoFluxNodeVisual> ____selectedNodes)
         {
+            if (!ENABLED.Value) return;
+
             if (____selectedNodes.Count > 0 && __instance.Slot.ActiveUser == __instance.LocalUser)
             {
-                menu.AddItem("Recalculate Flux Groups(Local)", new Uri("resdb:///05616f9bc2e93d18d9fa3a8b98dbd267bcaa5190bc222e384c743945f37ff315.png"), new colorX?(colorX.Orange)).Button.LocalPressed += (IButton button, ButtonEventData data) =>
+                menu.AddItem("Recalculate Flux Groups", new Uri("resdb:///05616f9bc2e93d18d9fa3a8b98dbd267bcaa5190bc222e384c743945f37ff315.png"), new colorX?(colorX.Orange)).Button.LocalPressed += (IButton button, ButtonEventData data) =>
                 {
                     try
                     {
@@ -58,11 +64,23 @@ public class Patch : BasePlugin
                     }
                     finally
                     {
-                        ____selectedNodes.Clear();
-                        menu.CloseMenu(button, data);
+                        // Add this delay so we don't nuke the temp slot before we actually do what we want
+                        __instance.RunInUpdates(6, () =>
+                        {
+                            __instance.Slot.ActiveUserRoot.Slot.FindChild("FluxGrouper - Temp")?.Destroy();
+                            foreach (ProtoFluxNodeVisual selectedNode in ____selectedNodes)
+                            {
+                                if (selectedNode != null)
+                                {
+                                    selectedNode.IsSelected.Value = false;
+                                }
+                            }
+                            ____selectedNodes.Clear();
+                            menu.CloseMenu(button, data);
+                        });
                     }
                 };
-                
+
             }
         }
     }

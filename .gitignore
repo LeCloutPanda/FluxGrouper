@@ -1,5 +1,33 @@
-bin/*
-obj/*
-*/bin/*
-*/obj/*
-.vs/*
+# Build output
+bin/
+obj/
+build/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE settings
+.vs/
+.idea/
+*.swp
+
+# Logs
+*.log
+
+# Generated files
+*.cache
+*.dbmdl
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# Other
+*.DS_Store
+Thumbs.db
